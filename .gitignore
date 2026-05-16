@@ -1,13 +1,33 @@
+# Python cache
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env/
+.venv/
 
 # IDE
 .vscode/
 .idea/
 
-# OS
+# OS files
 .DS_Store
+Thumbs.db
 
-# game engine cache
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Game / engine cache
 .kilo/
+
+# Logs
+*.log
+
+# Build / distribution
+build/
+dist/
+*.egg-info/
