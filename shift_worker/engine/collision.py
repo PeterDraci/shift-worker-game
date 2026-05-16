@@ -1,0 +1,1 @@
+# Collision handled inside Player.move()

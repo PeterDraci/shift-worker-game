@@ -1,0 +1,1 @@
+inventory = {'items': 0, 'delivered': 0}
