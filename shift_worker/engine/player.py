@@ -1,7 +1,7 @@
 from engine.map import RESTRICTED_X_MIN, RESTRICTED_Y_MAX, RESTRICTED_Y_MIN, RESTRICTED_X_MAX
 
 class Player:
-    SPEED = 2  # slow smooth movement
+    SPEED = 2
     SIZE = 20
 
     def __init__(self, x, y):

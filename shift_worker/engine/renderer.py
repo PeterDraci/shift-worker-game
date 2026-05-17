@@ -18,7 +18,7 @@ def load_worker_sprite():
     if WORKER_SPRITE is None:
         path = os.path.join(os.path.dirname(__file__), '../assets/img/worker.png')
         img = pygame.image.load(path).convert_alpha()
-        WORKER_SPRITE = pygame.transform.scale(img, (TILE_SIZE * 2, TILE_SIZE * 2))
+        WORKER_SPRITE = pygame.transform.scale(img, (TILE_SIZE * 8, TILE_SIZE * 8))
     return WORKER_SPRITE
 
 def render(screen, player_pos, camera_offset=(0, 0)):

@@ -1,7 +1,7 @@
 import json
 from data.level import level
 
-TILE_SIZE = 16
+TILE_SIZE = 8
 RESTRICTED_X_MIN = 80
 RESTRICTED_Y_MIN = 100
 RESTRICTED_X_MAX = 1440
