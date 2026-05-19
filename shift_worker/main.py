@@ -1,8 +1,12 @@
 import pygame
 import sys
-from engine.renderer import render, load_map_image
+from engine.renderer import render, load_map_image, DEBUG_COLORS
 from engine.player import Player
 from engine.map import RESTRICTED_X_MIN, RESTRICTED_Y_MAX, RESTRICTED_Y_MIN, RESTRICTED_X_MAX, Map, TILE_SIZE
+from engine.quest_manager import QuestManager
+from engine.inventory_system import Inventory
+from engine.interaction import handle_interaction, get_nearby_interactable
+from engine.ui_manager import UIManager
 
 pygame.init()
 # screen size (windowed view)
@@ -17,8 +21,13 @@ MAP_IMG, MAP_WIDTH, MAP_HEIGHT = load_map_image()
 # logical map (decoupled) - uses numeric grid from data/level.py
 game_map = Map()
 player = Player(130, 150)
+quest_mgr = QuestManager()
+inventory = Inventory()
 
 font = pygame.font.SysFont(None, 24)
+interact_font = pygame.font.SysFont(None, 20)
+ui = UIManager(screen, font)
+visited_triggers = set()
 
 DEBUG_MODE = True
 running = True
@@ -38,6 +47,12 @@ while running:
             if event.key == pygame.K_DOWN: down_pressed = True
             if event.key == pygame.K_LEFT: left_pressed = True
             if event.key == pygame.K_RIGHT: right_pressed = True
+            if event.key == pygame.K_e:
+                msg = handle_interaction(pygame.K_e, player, game_map, quest_mgr, inventory)
+                if msg:
+                    ui.notify(msg)
+                if DEBUG_MODE and msg:
+                    print("INTERACT:", msg)
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_UP: up_pressed = False
             if event.key == pygame.K_DOWN: down_pressed = False
@@ -68,9 +83,21 @@ while running:
         player.x = max(RESTRICTED_X_MIN, min(player.x, RESTRICTED_X_MAX - player.SIZE))
         player.y = max(RESTRICTED_Y_MIN, min(player.y, RESTRICTED_Y_MAX - player.SIZE))
 
+    # trigger zone (tile 7) support
+    tx = int(player.x // TILE_SIZE)
+    ty = int(player.y // TILE_SIZE)
+    if (tx, ty) not in visited_triggers:
+        if 0 <= tx < game_map.width and 0 <= ty < game_map.height:
+            tile = game_map.grid[ty][tx]
+            if tile == 7:
+                ui.notify("Entering restricted sector...")
+                visited_triggers.add((tx, ty))
+
     if DEBUG_MODE and (player.x != prev_x or player.y != prev_y):
         print("POS CHANGED:", player.x, player.y)
     prev_x, prev_y = player.x, player.y
+
+    ui.update()
 
     # Render
     cam_x = max(0, min(player.x - SCREEN_WIDTH // 2, MAP_WIDTH - SCREEN_WIDTH))
@@ -90,12 +117,20 @@ while running:
                     continue
                 if tile == 1:
                     pygame.draw.rect(overlay, (255, 0, 0, 80), (sx, sy, TILE_SIZE, TILE_SIZE))
-                elif tile == 3:
-                    pygame.draw.rect(overlay, (0, 255, 0, 80), (sx, sy, TILE_SIZE, TILE_SIZE))
+                elif tile in DEBUG_COLORS:
+                    pygame.draw.rect(overlay, (*DEBUG_COLORS[tile], 120), (sx, sy, TILE_SIZE, TILE_SIZE))
         screen.blit(overlay, (0, 0))
 
     hud = font.render(f"Pos: {player.x}, {player.y}", True, (255, 255, 255))
     screen.blit(hud, (10, SCREEN_HEIGHT - 30))
+
+    # interaction prompt
+    nearby = get_nearby_interactable(player, game_map)
+    if nearby:
+        prompt = interact_font.render("Press E to interact", True, (255, 255, 0))
+        screen.blit(prompt, (SCREEN_WIDTH // 2 - 80, SCREEN_HEIGHT - 80))
+
+    ui.draw(quest_mgr, inventory, game_map)
     pygame.display.flip()
     clock.tick(60)
 

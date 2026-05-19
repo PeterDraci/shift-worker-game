@@ -1,5 +1,6 @@
 import json
 from data.level import level
+from data.tiles import TILES
 
 TILE_SIZE = 8
 RESTRICTED_X_MIN = 80
@@ -25,8 +26,10 @@ class Map:
         self.height = len(self.grid)
         self.width = len(self.grid[0])
         self.objects = {}
+        self.components = {}
         self._restrict_playable_area(RESTRICTED_X_MIN, RESTRICTED_Y_MIN, RESTRICTED_X_MAX, RESTRICTED_Y_MAX)
         self.spawn_pos = self._find_spawn()
+        self._detect_components()
 
     def _find_spawn(self):
         for ty, row in enumerate(self.grid):
@@ -53,7 +56,7 @@ class Map:
         if not (0 <= tx < self.width and 0 <= ty < self.height):
             return False
         tile = self.grid[ty][tx]
-        return tile != 1  # walls block, everything else (0,2,3,4) allows
+        return tile != 1  # walls block, everything else (0,2..9) allows per TILES
 
     def get_tile(self, x, y):
         tx = x // TILE_SIZE
@@ -74,3 +77,27 @@ class Map:
         self.height = data['height']
         self.grid = data['grid']
         self.objects = {tuple(k): v for k, v in data.get('objects', {}).items()}
+
+    def _detect_components(self):
+        self.components = {}
+        for ty in range(self.height):
+            for tx in range(self.width):
+                if self.grid[ty][tx] == 4:
+                    self.components[(tx, ty)] = False  # not collected
+
+    def collect_component(self, tx, ty):
+        key = (tx, ty)
+        if key in self.components and not self.components[key]:
+            self.components[key] = True
+            self.grid[ty][tx] = 0  # remove visually
+            return True
+        return False
+
+    def collected_count(self):
+        return sum(1 for v in self.components.values() if v)
+
+    def total_components(self):
+        return len(self.components)
+
+    def all_components_collected(self):
+        return self.total_components() > 0 and all(self.components.values())

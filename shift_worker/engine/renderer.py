@@ -30,3 +30,14 @@ def render(screen, player_pos, camera_offset=(0, 0)):
     px, py = player_pos
     sw, sh = sprite.get_size()
     screen.blit(sprite, (px - camera_offset[0] - sw // 2, py - camera_offset[1] - sh // 2))
+
+DEBUG_COLORS = {
+    2: (0, 100, 255),    # blue
+    3: (255, 255, 0),    # yellow
+    4: (0, 255, 0),      # green
+    5: (128, 0, 128),    # purple
+    6: (255, 0, 0),      # red
+    7: (0, 255, 255),    # cyan
+    8: (255, 165, 0),    # orange
+    9: (255, 255, 255),  # white
+}
